@@ -1,6 +1,6 @@
 # Draw main route and alternative routes using Google Maps API in Flutter 
 
-![image](screenshots/sc1.jpg)
+![image](screenshots/ss1.jpg)
 
 
 ## Get Started
