@@ -13,7 +13,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Flutter Demo",
-      theme: ThemeData(primaryColor: Colors.black),
+      theme: ThemeData(primaryColor: Colors.black,
+      unselectedWidgetColor: Colors.white),
       home: MapScreen(),
     );
   }

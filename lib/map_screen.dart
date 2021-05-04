@@ -4,8 +4,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'directions_model.dart';
 import 'map_style.dart';
 
-
-
 class MapScreen extends StatefulWidget {
   @override
   _MapScreenState createState() => _MapScreenState();
@@ -24,6 +22,7 @@ class _MapScreenState extends State<MapScreen> {
     super.dispose();
   }
 
+  bool _checked;
   GoogleMapController _googleMapController;
   Marker _origin;
   Marker _destination;
@@ -37,6 +36,7 @@ class _MapScreenState extends State<MapScreen> {
     // TODO: implement initState
     super.initState();
     setCustomMapPin();
+    _checked = false;
   }
 
   void setCustomMapPin() async {
@@ -103,10 +103,8 @@ class _MapScreenState extends State<MapScreen> {
               controller.setMapStyle(Utils.mapStyle);
             },
             markers: {
-
               if (_origin != null) _origin,
               if (_destination != null) _destination,
-
             },
             polylines: _polylines,
 
@@ -126,9 +124,10 @@ class _MapScreenState extends State<MapScreen> {
           ),
           buildDropDownMenu(context),
 
+          buildAlternativesCheckBox(),
+
           // If info is not null this build info container
-          if (_info != null)
-            buildDurationAndDistanceContainer(context)
+          if (_info != null) buildDurationAndDistanceContainer(context),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -142,13 +141,95 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  Positioned buildAlternativesCheckBox() {
+    return Positioned(
+          left: 10,
+          bottom: 20,
+          child: Column(
+            children: [
+              Text('ALTERNATIVES',style: TextStyle(color: Colors.white,fontSize: 13),),
+              Checkbox(
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                checkColor: Colors.green,
+                  activeColor: Colors.transparent,
+                  value: _checked,
+                  onChanged: (bool value) {
+                    setState(() {
+                      _checked = value;
+                    });
+                  }),
+            ],
+          ),
+        );
+  }
+
   Positioned buildDropDownMenu(BuildContext context) {
     return Positioned(
-          bottom: 20,
-          child: Container(
-            width: MediaQuery.of(context).size.width / 2,
+      bottom: 20,
+      child: Container(
+        width: MediaQuery.of(context).size.width / 2,
+        decoration: BoxDecoration(
+          color: Colors.grey,
+          borderRadius: BorderRadius.circular(20.0),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              offset: Offset(0, 2),
+              blurRadius: 6.0,
+            )
+          ],
+        ),
+        padding: const EdgeInsets.all(0.0),
+        child: Center(
+          child: DropdownButton<String>(
+            dropdownColor: Colors.grey,
+            value: chosenValue,
+            //elevation: 5,
+            style: TextStyle(color: Colors.white, fontSize: 20),
+
+            items: <String>[
+              'driving',
+              'walking',
+              'bicycling',
+              'transit',
+            ].map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            hint: Text(
+              "Mod",
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400),
+            ),
+            onChanged: (String value) {
+              setState(() {
+                chosenValue = value;
+              });
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Positioned buildDurationAndDistanceContainer(BuildContext context) {
+    return Positioned(
+      top: 20,
+      child: Column(
+        children: [
+          Container(
+            height: 45.0,
+            width: MediaQuery.of(context).size.width / 1.5,
+            padding: const EdgeInsets.symmetric(
+              vertical: 6.0,
+              horizontal: 12.0,
+            ),
             decoration: BoxDecoration(
-              color: Colors.grey,
+              color: Color.fromARGB(204, 147, 70, 140),
               borderRadius: BorderRadius.circular(20.0),
               boxShadow: const [
                 BoxShadow(
@@ -158,84 +239,24 @@ class _MapScreenState extends State<MapScreen> {
                 )
               ],
             ),
-            padding: const EdgeInsets.all(0.0),
             child: Center(
-              child: DropdownButton<String>(
-                dropdownColor: Colors.grey,
-                value: chosenValue,
-                //elevation: 5,
-                style: TextStyle(color: Colors.white, fontSize: 20),
-
-                items: <String>[
-                  'driving',
-                  'walking',
-                  'bicycling',
-                  'transit',
-                ].map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                hint: Text(
-                  "Mod",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400),
+              child: Text(
+                '${_info.totalDistance}, ${_info.totalDuration}',
+                style: const TextStyle(
+                  fontSize: 18.0,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
                 ),
-                onChanged: (String value) {
-                  setState(() {
-                    chosenValue = value;
-                  });
-                },
               ),
             ),
           ),
-        );
-  }
+          SizedBox(
+            height: 10,
+          ),
 
-  Positioned buildDurationAndDistanceContainer(BuildContext context) {
-    return Positioned(
-            top: 20,
-            child: Column(
-              children: [
-                Container(
-                  height: 45.0,
-                  width: MediaQuery.of(context).size.width / 1.5,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 6.0,
-                    horizontal: 12.0,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Color.fromARGB(204, 147, 70, 140),
-                    borderRadius: BorderRadius.circular(20.0),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black26,
-                        offset: Offset(0, 2),
-                        blurRadius: 6.0,
-                      )
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${_info.totalDistance}, ${_info.totalDuration}',
-                      style: const TextStyle(
-                        fontSize: 18.0,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-
-                // if alternative route is available this container show.
-                _info.alternativePolylinePoints !=null
-                    ? Container(
+          // if alternative route is available this container show.
+          _info.alternativePolylinePoints != null
+              ? Container(
                   height: 45.0,
                   width: MediaQuery.of(context).size.width / 1.5,
                   padding: const EdgeInsets.symmetric(
@@ -264,15 +285,14 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                   ),
                 )
-                    : SizedBox(),
-              ],
-            ),
-          );
+              : SizedBox(),
+        ],
+      ),
+    );
   }
 
   // Marker ekleme fonksiyonu
   void _addMarker(LatLng pos) async {
-
     // There are two status
     // 1 -Both markers are available
     // 2 -No marker on map
@@ -291,7 +311,6 @@ class _MapScreenState extends State<MapScreen> {
         // Clear lines on map
         _polylines.clear();
       });
-
     } else {
       // If there is a origin add destination marker
       setState(() {
@@ -305,8 +324,10 @@ class _MapScreenState extends State<MapScreen> {
 
       // Get directions
       final directions = await DirectionsRepository().getDirections(
-          mode: chosenValue, origin: _origin.position, destination: pos);
-
+          mode: chosenValue,
+          origin: _origin.position,
+          destination: pos,
+          alternative: _checked);
 
       // Directions is not empty make these
       if (directions != null) {
@@ -320,8 +341,8 @@ class _MapScreenState extends State<MapScreen> {
               width: 6,
               points: _info.polylinePoints != null
                   ? _info.polylinePoints
-                  .map((e) => LatLng(e.latitude, e.longitude))
-                  .toList()
+                      .map((e) => LatLng(e.latitude, e.longitude))
+                      .toList()
                   : null);
 
           _polylines.add(polyline);
@@ -340,4 +361,3 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 }
-
